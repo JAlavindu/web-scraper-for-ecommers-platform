@@ -1,526 +1,356 @@
-# # from selenium import webdriver
-# # from selenium.webdriver.common.by import By
-# # import time
-# # from selenium.webdriver.support.wait import WebDriverWait
-# # from selenium.webdriver.support import expected_conditions as EC
-# # from selenium.webdriver.common.action_chains import ActionChains
-# # from anticaptchaofficial.geetestproxyless import *
-# #
-# # ANTI_API_KEY = "2a0d3dd4c7e7c4851b796dc302daa8c1"
-# #
-# # driver = webdriver.Chrome()
-# # driver.maximize_window()
-# #
-# # def signup_test():
-# #     driver.get("https://www.daraz.lk/#?")
-# #     signUpButton = driver.find_element(By.XPATH, "//a[normalize-space()='Sign Up']")
-# #     print(signUpButton.is_displayed())
-# #     signUpButton.click()
-# #
-# #     input_phone_num()
-# #
-# #     try:
-# #         checkbox = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "//div[contains(@class,'iweb-checkbox-icon')]")))
-# #         driver.execute_script("arguments[0].scrollIntoView(true);", checkbox)  # Scroll into view
-# #         driver.execute_script("arguments[0].click();", checkbox)
-# #         print("Checkbox clicked")
-# #     except Exception as e:
-# #         print(f"Checkbox was not clickable: {e}")
-# #
-# #     time.sleep(2)
-# #
-# #     try:
-# #         otp_button = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH,
-# #                                        "//div[contains(@class, 'index_module_otpText')]")))
-# #         driver.execute_script("arguments[0].scrollIntoView(true);", otp_button)
-# #         driver.execute_script("arguments[0].click();", otp_button)
-# #         print("OTP button clicked")
-# #     except Exception as e:
-# #         print(f"OTP button was not clickable: {e}")
-# #         driver.quit()
-# #         return
-# #
-# #     try:
-# #         iframe = WebDriverWait(driver, 10).until(
-# #             EC.presence_of_element_located((By.XPATH, "//iframe[contains(@src,'captcha')]"))
-# #         )
-# #         driver.switch_to.frame(iframe)
-# #
-# #         print("🟡 Extracting GeeTest config...")
-# #
-# #         # Read GeeTest init JSON object from page
-# #         geetest_config = driver.execute_script("""
-# #                 return window.initData ? window.initData : window.conf ? window.conf : null;
-# #             """)
-# #
-# #         if geetest_config is None:
-# #             print("❌ Could not detect GeeTest config")
-# #             return
-# #
-# #         print(json.dumps(geetest_config, indent=2))
-# #
-# #         gt = geetest_config["gt"]
-# #         challenge = geetest_config["challenge"]
-# #
-# #         print("GT:", gt)
-# #         print("Challenge:", challenge)
-# #
-# #         # Solve via AntiCaptcha
-# #         solution = solve_geetest(gt, challenge, driver.current_url)
-# #
-# #         if solution is None:
-# #             print("❌ Failed to solve GeeTest")
-# #             driver.quit()
-# #             return
-# #
-# #         print("🟢 Injecting solved captcha into GeeTest...")
-# #
-# #         driver.execute_script("""
-# #                 document.getElementById("geetest_challenge").value = arguments[0];
-# #                 document.getElementById("geetest_validate").value = arguments[1];
-# #                 document.getElementById("geetest_seccode").value = arguments[2];
-# #             """, solution["challenge"], solution["validate"], solution["seccode"])
-# #
-# #         print("🟢 Captcha bypassed!")
-# #
-# #         # Submit
-# #         driver.execute_script("document.querySelector('button').click()")
-# #
-# #
-# #
-# #
-# #         print("Slider captcha solved")
-# #     except Exception as e:
-# #         print(f"Slider captcha could not be solved: {e}")
-# #         driver.quit()
-# #         return
-# #
-# #
-# #     time.sleep(5)
-# #     driver.quit()
-# #
-# # def input_phone_num():
-# #     phone_num = input("Enter your phone number: ")
-# #     phone_input = driver.find_element(By.XPATH, "//div[contains(@class,'iweb-dialog-container-enter')]//input[@placeholder='Please enter your phone number']")
-# #     phone_input.send_keys(phone_num)
-# #
-# # def input_otp():
-# #     otp = input("Enter the OTP sent to your phone: ")
-# #     otp_input = driver.find_element(By.XPATH, "//div[contains(@class,'iweb-dialog-container-enter')]//input[@placeholder='Please enter the OTP']")
-# #     otp_input.send_keys(otp)
-# #
-# # def solve_geetest(gt, challenge, url):
-# #     solver = geetestProxyless()
-# #     solver.set_verbose(1)
-# #     solver.set_key(ANTI_API_KEY)
-# #     solver.set_website_url(url)
-# #     solver.set_gt_key(gt)
-# #     solver.set_challenge(challenge)
-# #
-# #     print("🟡 Sending to AntiCaptcha...")
-# #
-# #     result = solver.solve_and_return_solution()
-# #
-# #     if result != 0:
-# #         print("🟢 AntiCaptcha solved it!")
-# #         return result
-# #     else:
-# #         print("🔴 AntiCaptcha Error:", solver.error_code)
-# #         return None
-# #
-# #
-# #
-#
-#
-# from selenium import webdriver
-# from selenium.webdriver.common.by import By
-# import time
-# import json
-# from selenium.webdriver.support.wait import WebDriverWait
-# from selenium.webdriver.support import expected_conditions as EC
-# from anticaptchaofficial.geetestproxyless import *
-#
-# ANTI_API_KEY = "2a0d3dd4c7e7c4851b796dc302daa8c1"  # Replace with your actual key
-#
-# driver = webdriver.Chrome()
-# driver.maximize_window()
-#
-#
-# def signup_test():
-#     driver.get("https://www.daraz.lk/#?")
-#     signUpButton = driver.find_element(By.XPATH, "//a[normalize-space()='Sign Up']")
-#     print(signUpButton.is_displayed())
-#     signUpButton.click()
-#
-#     input_phone_num()
-#
-#     # Click checkbox
-#     try:
-#         checkbox = WebDriverWait(driver, 10).until(
-#             EC.element_to_be_clickable((By.XPATH, "//div[contains(@class,'iweb-checkbox-icon')]"))
-#         )
-#         driver.execute_script("arguments[0].scrollIntoView(true);", checkbox)
-#         driver.execute_script("arguments[0].click();", checkbox)
-#         print("Checkbox clicked")
-#     except Exception as e:
-#         print(f"Checkbox was not clickable: {e}")
-#
-#     time.sleep(2)
-#
-#     # Click OTP button
-#     try:
-#         otp_button = WebDriverWait(driver, 10).until(
-#             EC.element_to_be_clickable((By.XPATH, "//div[contains(@class, 'index_module_otpText')]"))
-#         )
-#         driver.execute_script("arguments[0].scrollIntoView(true);", otp_button)
-#         driver.execute_script("arguments[0].click();", otp_button)
-#         print("OTP button clicked")
-#     except Exception as e:
-#         print(f"OTP button was not clickable: {e}")
-#         driver.quit()
-#         return
-#
-#     # Handle GeeTest captcha
-#     try:
-#         # Wait for captcha iframe
-#         iframe = WebDriverWait(driver, 10).until(
-#             EC.presence_of_element_located((By.XPATH, "//iframe[contains(@src,'captcha')]"))
-#         )
-#
-#         # Get the page URL before switching to iframe
-#         page_url = driver.current_url
-#
-#         driver.switch_to.frame(iframe)
-#         print("🟡 Extracting GeeTest config...")
-#
-#         # Extract GeeTest configuration
-#         geetest_config = driver.execute_script("""
-#             return window.initData ? window.initData : window.conf ? window.conf : null;
-#         """)
-#
-#         if geetest_config is None:
-#             print("❌ Could not detect GeeTest config")
-#             driver.switch_to.default_content()
-#             driver.quit()
-#             return
-#
-#         print("GeeTest Config:", json.dumps(geetest_config, indent=2))
-#
-#         gt = geetest_config.get("gt")
-#         challenge = geetest_config.get("challenge")
-#
-#         if not gt or not challenge:
-#             print("❌ Missing GT or Challenge parameter")
-#             driver.switch_to.default_content()
-#             driver.quit()
-#             return
-#
-#         print(f"GT: {gt}")
-#         print(f"Challenge: {challenge}")
-#
-#         # Switch back to main content
-#         driver.switch_to.default_content()
-#
-#         # Solve captcha using AntiCaptcha
-#         solution = solve_geetest(gt, challenge, page_url)
-#
-#         if solution is None:
-#             print("❌ Failed to solve GeeTest")
-#             driver.quit()
-#             return
-#
-#         print("🟢 GeeTest solved successfully!")
-#         print(f"Solution: {json.dumps(solution, indent=2)}")
-#
-#         # Switch back to iframe to inject solution
-#         driver.switch_to.frame(iframe)
-#
-#         # Inject the solution into the page
-#         driver.execute_script("""
-#             if (typeof window.captchaObj !== 'undefined') {
-#                 window.captchaObj.getValidate = function() {
-#                     return {
-#                         geetest_challenge: arguments[0],
-#                         geetest_validate: arguments[1],
-#                         geetest_seccode: arguments[2]
-#                     };
-#                 };
-#             }
-#         """, solution["geetest_challenge"], solution["geetest_validate"], solution["geetest_seccode"])
-#
-#         print("🟢 Captcha solution injected!")
-#
-#         # Switch back to main content
-#         driver.switch_to.default_content()
-#
-#         # Wait a moment for the captcha to be validated
-#         time.sleep(3)
-#
-#         # Now input OTP
-#         input_otp()
-#
-#         print("Process completed successfully!")
-#
-#     except Exception as e:
-#         print(f"Error handling captcha: {e}")
-#         driver.switch_to.default_content()
-#         driver.quit()
-#         return
-#
-#     time.sleep(5)
-#     driver.quit()
-#
-#
-# def input_phone_num():
-#     phone_num = input("Enter your phone number: ")
-#     phone_input = driver.find_element(
-#         By.XPATH,
-#         "//div[contains(@class,'iweb-dialog-container-enter')]//input[@placeholder='Please enter your phone number']"
-#     )
-#     phone_input.send_keys(phone_num)
-#
-#
-# def input_otp():
-#     otp = input("Enter the OTP sent to your phone: ")
-#     otp_input = driver.find_element(
-#         By.XPATH,
-#         "//div[contains(@class,'iweb-dialog-container-enter')]//input[@placeholder='Please enter the OTP']"
-#     )
-#     otp_input.send_keys(otp)
-#
-#     # Submit OTP
-#     submit_button = driver.find_element(By.XPATH, "//button[contains(text(),'Submit') or contains(text(),'Verify')]")
-#     submit_button.click()
-#
-#
-# def solve_geetest(gt, challenge, url):
-#     solver = geetestProxyless()
-#     solver.set_verbose(1)
-#     solver.set_key(ANTI_API_KEY)
-#     solver.set_website_url(url)
-#     solver.set_gt_key(gt)
-#     solver.set_challenge_key(challenge)
-#
-#     print("🟡 Sending to AntiCaptcha...")
-#
-#     try:
-#         solution = solver.solve_and_return_solution()
-#
-#         if solution != 0 and isinstance(solution, dict):
-#             print("🟢 AntiCaptcha solved it!")
-#             return solution
-#         else:
-#             print(f"🔴 AntiCaptcha Error: {solver.error_code}")
-#             return None
-#     except Exception as e:
-#         print(f"🔴 Exception during solve: {e}")
-#         return None
-
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.action_chains import ActionChains
 import time
 import json
 import re
+import random
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-# For Alibaba NC Captcha, you'll need anticaptcha's funcaptcha or custom solution
-from anticaptchaofficial.funcaptchaproxyless import *
-
 ANTI_API_KEY = "2a0d3dd4c7e7c4851b796dc302daa8c1"
 
-# Setup Chrome with network logging
-chrome_options = Options()
-chrome_options.set_capability('goog:loggingPrefs', {'performance': 'ALL'})
 
-driver = webdriver.Chrome(options=chrome_options)
-driver.maximize_window()
+def create_undetectable_driver():
+    """Create a Chrome driver with anti-detection measures"""
+
+    chrome_options = Options()
+
+    # Essential anti-detection flags
+    chrome_options.add_argument('--disable-blink-features=AutomationControlled')
+    chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    chrome_options.add_experimental_option('useAutomationExtension', False)
+
+    # Additional stealth options
+    chrome_options.add_argument('--disable-dev-shm-usage')
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument('--disable-web-security')
+    chrome_options.add_argument('--allow-running-insecure-content')
+
+    # Randomize user agent
+    user_agents = [
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    ]
+    chrome_options.add_argument(f'user-agent={random.choice(user_agents)}')
+
+    # Enable performance logging for network monitoring
+    chrome_options.set_capability('goog:loggingPrefs', {'performance': 'ALL'})
+
+    driver = webdriver.Chrome(options=chrome_options)
+
+    # Execute CDP commands to hide automation
+    driver.execute_cdp_cmd('Network.setUserAgentOverride', {
+        "userAgent": driver.execute_script("return navigator.userAgent").replace('HeadlessChrome', 'Chrome')
+    })
+
+    # Override navigator.webdriver property
+    driver.execute_cdp_cmd('Page.addScriptToEvaluateOnNewDocument', {
+        'source': '''
+            Object.defineProperty(navigator, 'webdriver', {
+                get: () => undefined
+            });
+
+            // Mock plugins
+            Object.defineProperty(navigator, 'plugins', {
+                get: () => [1, 2, 3, 4, 5]
+            });
+
+            // Mock languages
+            Object.defineProperty(navigator, 'languages', {
+                get: () => ['en-US', 'en']
+            });
+
+            // Mock permissions
+            const originalQuery = window.navigator.permissions.query;
+            window.navigator.permissions.query = (parameters) => (
+                parameters.name === 'notifications' ?
+                    Promise.resolve({ state: Notification.permission }) :
+                    originalQuery(parameters)
+            );
+
+            // Mock chrome object
+            window.chrome = {
+                runtime: {}
+            };
+        '''
+    })
+
+    driver.maximize_window()
+    return driver
 
 
-def extract_captcha_params_from_network():
-    """Extract captcha parameters from network logs"""
-    logs = driver.get_log('performance')
+driver = None
 
-    captcha_data = {
-        'session_id': None,
-        'sig': None,
-        'token': None,
-        'scene': None,
-        'appkey': None
-    }
 
-    for entry in logs:
+def human_like_delay(min_sec=0.5, max_sec=2.0):
+    """Add random human-like delays"""
+    time.sleep(random.uniform(min_sec, max_sec))
+
+
+def human_like_type(element, text):
+    """Type text with human-like delays between keystrokes"""
+    for char in text:
+        element.send_keys(char)
+        time.sleep(random.uniform(0.05, 0.15))
+
+
+def smooth_move_to_element(driver, element):
+    """Move mouse to element with smooth human-like path"""
+    action = ActionChains(driver)
+
+    # Get element location
+    location = element.location
+    size = element.size
+
+    # Calculate center of element
+    center_x = location['x'] + size['width'] / 2
+    center_y = location['y'] + size['height'] / 2
+
+    # Move in steps
+    steps = random.randint(10, 20)
+    for i in range(steps):
+        action.move_by_offset(center_x / steps, center_y / steps)
+        action.pause(random.uniform(0.01, 0.03))
+
+    action.perform()
+
+
+def solve_slider_human_like(slider_element):
+    """
+    Solve slider with highly human-like behavior
+    """
+    try:
+        print("🤖 Starting human-like slider solve...")
+
+        # Get slider information
+        slider_size = slider_element.size
+        print(f"📏 Slider width: {slider_size['width']}px")
+
+        # Calculate slide distance (typically 90% of track width)
+        # Usually around 260-300px for Alibaba captcha
+        slide_distance = random.randint(250, 290)
+
+        action = ActionChains(driver)
+
+        # Move to slider first (human behavior)
+        print("👆 Moving mouse to slider...")
+        action.move_to_element(slider_element)
+        action.pause(random.uniform(0.3, 0.6))
+        action.perform()
+
+        human_like_delay(0.5, 1.0)
+
+        # Click and hold
+        print("🖱️ Clicking and holding slider...")
+        action = ActionChains(driver)
+        action.click_and_hold(slider_element)
+        action.pause(random.uniform(0.1, 0.3))
+        action.perform()
+
+        human_like_delay(0.2, 0.4)
+
+        # Slide with human-like movement pattern
+        print("🏃 Sliding...")
+        action = ActionChains(driver)
+
+        # Phase 1: Quick initial movement (40% of distance)
+        phase1_distance = slide_distance * 0.4
+        steps1 = random.randint(8, 12)
+        for i in range(steps1):
+            offset = phase1_distance / steps1
+            y_offset = random.uniform(-1, 1)  # Small vertical wobble
+            action.move_by_offset(offset, y_offset)
+            action.pause(random.uniform(0.005, 0.015))
+
+        # Phase 2: Slower middle movement (40% of distance)
+        phase2_distance = slide_distance * 0.4
+        steps2 = random.randint(15, 25)
+        for i in range(steps2):
+            offset = phase2_distance / steps2
+            y_offset = random.uniform(-1.5, 1.5)
+            action.move_by_offset(offset, y_offset)
+            action.pause(random.uniform(0.015, 0.035))
+
+        # Phase 3: Final adjustment (20% of distance)
+        phase3_distance = slide_distance * 0.2
+        steps3 = random.randint(5, 10)
+        for i in range(steps3):
+            offset = phase3_distance / steps3
+            y_offset = random.uniform(-0.5, 0.5)
+            action.move_by_offset(offset, y_offset)
+            action.pause(random.uniform(0.02, 0.05))
+
+        # Small pause before release (human hesitation)
+        action.pause(random.uniform(0.1, 0.3))
+
+        # Release
+        print("✋ Releasing slider...")
+        action.release()
+        action.perform()
+
+        print("✅ Slider movement completed")
+
+        # Wait for validation
+        time.sleep(3)
+
+        # Check for success
         try:
-            log = json.loads(entry['message'])['message']
+            # Look for success indicators
+            driver.switch_to.default_content()
+            time.sleep(1)
 
-            if log.get('method') == 'Network.responseReceived':
-                response = log.get('params', {}).get('response', {})
-                url = response.get('url', '')
+            # Check if OTP field appeared (indirect success indicator)
+            try:
+                otp_field = driver.find_element(By.XPATH, "//input[contains(@placeholder, 'OTP')]")
+                print("🎉 SUCCESS! OTP field is now visible!")
+                return True
+            except:
+                pass
 
-                # Look for captcha initialization URLs
-                if 'captcha' in url.lower() or 'nc.js' in url.lower():
-                    print(f"🔍 Found captcha URL: {url[:100]}...")
+            # Check for error message
+            try:
+                error = driver.find_element(By.XPATH,
+                                            "//*[contains(text(), 'unusual traffic') or contains(text(), 'something') and contains(text(), 'wrong')]")
+                print("⚠️ Still showing error - captcha may need retry")
+                return False
+            except:
+                pass
 
-                    # Extract parameters from URL
-                    if 'secdata' in url:
-                        match = re.search(r'secdata=([^&]+)', url)
-                        if match:
-                            captcha_data['session_id'] = match.group(1)
-
-                    # Try to get response body
-                    try:
-                        request_id = log['params']['requestId']
-                        response_body = driver.execute_cdp_cmd('Network.getResponseBody', {'requestId': request_id})
-                        body = response_body.get('body', '')
-
-                        # Try to parse JSON
-                        try:
-                            json_data = json.loads(body)
-                            print(f"📄 Response data: {json.dumps(json_data, indent=2)[:300]}")
-
-                            # Extract NC Captcha parameters
-                            if 'data' in json_data:
-                                data = json_data['data']
-                                captcha_data['session_id'] = data.get('csessionid') or data.get('sessionId')
-                                captcha_data['sig'] = data.get('sig')
-                                captcha_data['token'] = data.get('token')
-                                captcha_data['scene'] = data.get('scene')
-
-                        except json.JSONDecodeError:
-                            pass
-
-                    except Exception as e:
-                        pass
+            # If no error and no success, uncertain
+            print("❓ Status uncertain - please verify manually")
+            return None
 
         except Exception as e:
-            continue
-
-    return captcha_data
-
-
-def extract_captcha_from_page():
-    """Extract captcha parameters directly from page"""
-    try:
-        # Wait for captcha to load
-        time.sleep(3)
-
-        print("🔍 Extracting captcha config from page...")
-
-        # Method 1: Check for NC (NoCaptcha) object
-        nc_config = driver.execute_script("""
-            // Check for Alibaba NC Captcha
-            if (window.NC_Opt) return window.NC_Opt;
-            if (window.nc_config) return window.nc_config;
-            if (window.noCaptcha) return window.noCaptcha;
-
-            // Check iframes
-            var iframes = document.getElementsByTagName('iframe');
-            for (var i = 0; i < iframes.length; i++) {
-                try {
-                    if (iframes[i].contentWindow.NC_Opt) {
-                        return iframes[i].contentWindow.NC_Opt;
-                    }
-                } catch(e) {}
-            }
-
-            return null;
-        """)
-
-        if nc_config:
-            print("✅ Found NC Config:")
-            print(json.dumps(nc_config, indent=2))
-            return nc_config
-
-        # Method 2: Extract from DOM attributes
-        captcha_element = driver.execute_script("""
-            var elements = document.querySelectorAll('[data-nc-idx], [id*="nc_"], .nc-container, [class*="nc-"]');
-            if (elements.length > 0) {
-                var el = elements[0];
-                return {
-                    'nc-idx': el.getAttribute('data-nc-idx'),
-                    'id': el.id,
-                    'className': el.className
-                };
-            }
-            return null;
-        """)
-
-        if captcha_element:
-            print("✅ Found captcha element:")
-            print(json.dumps(captcha_element, indent=2))
-            return captcha_element
-
-        return None
+            print(f"⚠️ Could not verify success: {e}")
+            return None
 
     except Exception as e:
-        print(f"❌ Error extracting captcha: {e}")
-        return None
+        print(f"❌ Error during slider solve: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
 
 
-def solve_nc_captcha_manual():
-    """Manual slider solving - for testing"""
+def solve_captcha():
+    """Main captcha solving function"""
     try:
-        print("\n🎯 Attempting to find slider...")
+        print("\n🎯 Locating slider...")
+        human_like_delay(2, 3)
 
-        # Wait for slider to appear
-        time.sleep(3)
-
-        # Try to find the slider in main page or iframe
         slider = None
+        iframe_index = None
 
-        # Check main page first
-        try:
-            slider = driver.find_element(By.CSS_SELECTOR,
-                                         ".nc_iconfont.btn_slide, .nc-lang-cnt, [class*='nc_'], [id*='nc_']")
-            print("✅ Found slider in main page")
-        except:
-            print("⚠️ Slider not in main page, checking iframes...")
+        # Check iframes
+        iframes = driver.find_elements(By.TAG_NAME, "iframe")
+        print(f"📦 Found {len(iframes)} iframes")
 
-            # Check iframes
-            iframes = driver.find_elements(By.TAG_NAME, "iframe")
-            for idx, iframe in enumerate(iframes):
-                try:
-                    driver.switch_to.frame(iframe)
-                    slider = driver.find_element(By.CSS_SELECTOR,
-                                                 ".nc_iconfont.btn_slide, .nc-lang-cnt, [class*='slider']")
-                    print(f"✅ Found slider in iframe {idx}")
+        for idx, iframe in enumerate(iframes):
+            try:
+                driver.switch_to.frame(iframe)
+
+                # Try multiple selectors
+                selectors = [
+                    ".nc_iconfont.btn_slide",
+                    ".nc-lang-cnt",
+                    "#nc_1_n1z",
+                    "[id^='nc_'][id$='_n1z']",
+                    ".btn_slide",
+                    "[class*='btn_slide']",
+                    ".slidetounlock"
+                ]
+
+                for selector in selectors:
+                    try:
+                        slider = driver.find_element(By.CSS_SELECTOR, selector)
+                        iframe_index = idx
+                        print(f"✅ Found slider in iframe {idx}: {selector}")
+                        break
+                    except:
+                        continue
+
+                if slider:
                     break
-                except:
+                else:
                     driver.switch_to.default_content()
-                    continue
 
-        if slider:
-            print("\n⚠️ MANUAL SOLVING REQUIRED")
-            print("Please solve the slider captcha manually in the browser")
-            print("Press Enter after you've solved it...")
-            input()
+            except Exception as e:
+                driver.switch_to.default_content()
+                continue
 
+        if not slider:
+            print("❌ Could not find slider")
             driver.switch_to.default_content()
-            return True
-        else:
-            print("❌ Could not find slider element")
+
+            # Check for error/blocked message
+            try:
+                error_msg = driver.find_element(By.XPATH, "//*[contains(text(), 'unusual traffic')]")
+                print("⚠️ DETECTED: Bot detection triggered!")
+                print("💡 TIP: Try closing browser completely and running again")
+                print("💡 TIP: Or wait a few minutes before retrying")
+            except:
+                pass
+
             return False
 
+        # Attempt solve
+        result = solve_slider_human_like(slider)
+
+        driver.switch_to.default_content()
+        return result
+
     except Exception as e:
-        print(f"❌ Error solving captcha: {e}")
+        print(f"❌ Error: {e}")
+        import traceback
+        traceback.print_exc()
         driver.switch_to.default_content()
         return False
 
 
 def signup_test():
+    global driver
+
     try:
+        print("🚀 Creating undetectable browser session...")
+        driver = create_undetectable_driver()
+
+        print("🌐 Loading Daraz homepage...")
         driver.get("https://www.daraz.lk/#?")
-        time.sleep(2)
+        human_like_delay(2, 3)
+
+        # Scroll a bit (human behavior)
+        driver.execute_script("window.scrollTo(0, 300);")
+        human_like_delay(1, 2)
+        driver.execute_script("window.scrollTo(0, 0);")
+        human_like_delay(0.5, 1)
 
         # Click Sign Up
         print("📝 Clicking Sign Up...")
         signUpButton = driver.find_element(By.XPATH, "//a[normalize-space()='Sign Up']")
+        smooth_move_to_element(driver, signUpButton)
+        human_like_delay(0.3, 0.7)
         signUpButton.click()
-        time.sleep(2)
+        human_like_delay(2, 3)
 
         # Input phone number
-        input_phone_num()
+        phone_num = input("📱 Enter your phone number: ")
+        phone_input = driver.find_element(
+            By.XPATH,
+            "//input[@placeholder='Please enter your phone number']"
+        )
+
+        # Click on input field first
+        phone_input.click()
+        human_like_delay(0.3, 0.6)
+
+        # Type with human-like delays
+        print("⌨️ Typing phone number...")
+        human_like_type(phone_input, phone_num)
+        print(f"✅ Entered phone: {phone_num}")
+        human_like_delay(1, 2)
 
         # Click checkbox
         try:
@@ -529,15 +359,15 @@ def signup_test():
                 EC.element_to_be_clickable((By.XPATH, "//div[contains(@class,'iweb-checkbox-icon')]"))
             )
             driver.execute_script("arguments[0].scrollIntoView(true);", checkbox)
+            human_like_delay(0.5, 1)
+
+            # Use JavaScript click to avoid detection
             driver.execute_script("arguments[0].click();", checkbox)
             print("✅ Checkbox clicked")
         except Exception as e:
             print(f"❌ Checkbox error: {e}")
 
-        time.sleep(2)
-
-        # Clear logs before clicking OTP
-        driver.get_log('performance')
+        human_like_delay(1.5, 2.5)
 
         # Click OTP button
         try:
@@ -546,91 +376,85 @@ def signup_test():
                 EC.element_to_be_clickable((By.XPATH, "//div[contains(@class, 'index_module_otpText')]"))
             )
             driver.execute_script("arguments[0].scrollIntoView(true);", otp_button)
+            human_like_delay(0.5, 1)
             driver.execute_script("arguments[0].click();", otp_button)
             print("✅ OTP button clicked")
         except Exception as e:
             print(f"❌ OTP button error: {e}")
             return
 
-        # Wait for captcha to load
+        # Wait for captcha
         print("\n⏳ Waiting for captcha to load...")
         time.sleep(5)
 
-        # Extract captcha parameters
-        print("\n" + "=" * 70)
-        print("CAPTCHA ANALYSIS")
-        print("=" * 70)
-
-        # Method 1: From network logs
-        print("\n🌐 Checking network logs...")
-        network_params = extract_captcha_params_from_network()
-        print(f"Network params: {json.dumps(network_params, indent=2)}")
-
-        # Method 2: From page
-        print("\n📄 Checking page...")
-        page_params = extract_captcha_from_page()
-
-        # For now, use manual solving
         print("\n" + "=" * 70)
         print("SOLVING CAPTCHA")
         print("=" * 70)
 
-        if solve_nc_captcha_manual():
-            print("\n✅ Captcha solved!")
+        # Attempt to solve
+        max_attempts = 3
+        for attempt in range(1, max_attempts + 1):
+            print(f"\n🔄 Attempt {attempt}/{max_attempts}")
 
-            # Wait a bit
+            result = solve_captcha()
+
+            if result is True:
+                print("\n🎉 Captcha solved successfully!")
+                break
+            elif result is False:
+                if attempt < max_attempts:
+                    print(f"⚠️ Failed, retrying in 3 seconds...")
+                    time.sleep(3)
+                else:
+                    print("\n❌ All attempts failed")
+                    print("\n💡 MANUAL INTERVENTION NEEDED")
+                    print("Please solve the captcha manually and press Enter...")
+                    input()
+            else:
+                print("\n❓ Uncertain result")
+                print("Did the captcha solve? (y/n): ", end='')
+                if input().lower() == 'y':
+                    result = True
+                    break
+
+        if result:
+            # Wait for OTP to arrive
+            print("\n✅ Waiting for OTP to be sent...")
             time.sleep(3)
 
-            # Now input OTP
-            print("\n📱 Ready to input OTP")
-            input_otp()
+            # Input OTP
+            try:
+                otp = input("🔐 Enter the OTP sent to your phone: ")
+                otp_input = driver.find_element(
+                    By.XPATH,
+                    "//input[contains(@placeholder, 'OTP')]"
+                )
+                human_like_type(otp_input, otp)
+                print(f"✅ Entered OTP")
 
-            print("\n🎉 Process completed!")
-        else:
-            print("\n❌ Failed to solve captcha")
+                human_like_delay(1, 2)
 
-        print("\nPress Enter to close...")
+                # Submit
+                try:
+                    submit_btn = driver.find_element(By.XPATH,
+                                                     "//button[contains(text(), 'Verify') or contains(text(), 'Submit')]")
+                    submit_btn.click()
+                    print("✅ Submitted!")
+                except:
+                    print("⚠️ Couldn't find submit button - press manually")
+
+                print("\n🎉 SIGNUP PROCESS COMPLETED!")
+
+            except Exception as e:
+                print(f"❌ Error with OTP: {e}")
+
+        print("\n📌 Press Enter to close...")
         input()
 
     except Exception as e:
-        print(f"❌ Error in signup test: {e}")
+        print(f"❌ Error: {e}")
         import traceback
         traceback.print_exc()
     finally:
-        driver.quit()
-
-
-def input_phone_num():
-    phone_num = input("📱 Enter your phone number: ")
-    phone_input = driver.find_element(
-        By.XPATH,
-        "//div[contains(@class,'iweb-dialog-container-enter')]//input[@placeholder='Please enter your phone number']"
-    )
-    phone_input.send_keys(phone_num)
-    print(f"✅ Entered phone: {phone_num}")
-
-
-def input_otp():
-    otp = input("🔐 Enter the OTP sent to your phone: ")
-    try:
-        otp_input = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((
-                By.XPATH,
-                "//input[@placeholder='Please enter the OTP' or contains(@placeholder, 'OTP')]"
-            ))
-        )
-        otp_input.send_keys(otp)
-        print(f"✅ Entered OTP: {otp}")
-
-        # Try to find and click submit button
-        time.sleep(1)
-        try:
-            submit_btn = driver.find_element(By.XPATH,
-                                             "//button[contains(text(), 'Verify') or contains(text(), 'Submit') or contains(@class, 'submit')]")
-            submit_btn.click()
-            print("✅ Clicked submit button")
-        except:
-            print("⚠️ Could not find submit button, you may need to click it manually")
-
-    except Exception as e:
-        print(f"❌ Error entering OTP: {e}")
+        if driver:
+            driver.quit()
