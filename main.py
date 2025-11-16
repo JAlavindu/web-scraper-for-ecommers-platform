@@ -1,5 +1,7 @@
-from signup import signup_test
+import signup
 
 if __name__ == "__main__":
-    signup_test()
+    signup()
+
+
 
