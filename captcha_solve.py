@@ -1,7 +1,9 @@
-import human_like_delay
+from delay_humanlike import human_like_delay
 from selenium.webdriver.common.by import By
-import solve_slider_human_like
+from slider import solve_slider_human_like
+from undetectable_driver import create_undetectable_driver
 
+driver = create_undetectable_driver()
 
 def solve_captcha():
     """Main captcha solving function"""
@@ -9,7 +11,7 @@ def solve_captcha():
         print("\n🎯 Locating slider...")
         human_like_delay(2, 3)
 
-        slider = None
+        slider_element = None
         iframe_index = None
 
         # Check iframes
@@ -49,7 +51,7 @@ def solve_captcha():
                 driver.switch_to.default_content()
                 continue
 
-        if not slider:
+        if not slider_element:
             print("❌ Could not find slider")
             driver.switch_to.default_content()
 
@@ -65,7 +67,7 @@ def solve_captcha():
             return False
 
         # Attempt solve
-        result = solve_slider_human_like(slider)
+        result = solve_slider_human_like(driver, slider_element)
 
         driver.switch_to.default_content()
         return result

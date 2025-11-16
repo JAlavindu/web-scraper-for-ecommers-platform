@@ -1,7 +1,6 @@
 
-
-import accessing_daraz
-import signup_with_google
+from daraz_access import accessing_daraz
+from google_signup import signup_with_google
 
 
 ANTI_API_KEY = "2a0d3dd4c7e7c4851b796dc302daa8c1"

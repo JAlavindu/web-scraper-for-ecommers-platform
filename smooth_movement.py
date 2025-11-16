@@ -1,4 +1,5 @@
 from selenium.webdriver.common.action_chains import ActionChains
+import random
 
 def smooth_move_to_element(driver, element):
     """Move mouse to element with smooth human-like path"""

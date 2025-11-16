@@ -1,12 +1,12 @@
-import create_undetectable_driver
 from selenium.webdriver.common.by import By
 import time
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from human_like_delay import human_like_delay
-from solve_captcha import solve_captcha
-import human_like_type
-import smooth_move_to_element
+from delay_humanlike import human_like_delay
+from captcha_solve import solve_captcha
+from undetectable_driver import create_undetectable_driver
+from smooth_movement import smooth_move_to_element
+from type_humanlike import human_like_type
 
 def accessing_daraz():
     global driver

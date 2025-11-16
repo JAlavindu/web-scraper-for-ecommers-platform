@@ -1,10 +1,11 @@
 from selenium import webdriver
+from selenium.webdriver.common.by import By
 import time
 import random
 from selenium.webdriver.common.action_chains import ActionChains
-import human_like_delay
+from delay_humanlike import human_like_delay
 
-def solve_slider_human_like(slider_element):
+def solve_slider_human_like(driver, slider_element):
     """
     Solve slider with highly human-like behavior
     """
