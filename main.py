@@ -13,8 +13,7 @@ if __name__ == "__main__":
     click_signup_button(open_daraz.driver)
     time.sleep(5)
     signup_with_google(open_daraz.driver)
-
-
+    time.sleep(10)
     open_daraz.driver.quit()
 
 
