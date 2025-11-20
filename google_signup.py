@@ -25,6 +25,8 @@ def signup_with_google(driver):
 
     WebDriverWait(driver, 10).until(EC.number_of_windows_to_be(2))
 
+    original_window = driver.current_window_handle
+
     new_window = [w for w in driver.window_handles if w != driver.current_window_handle][0]
     driver.switch_to.window(new_window)
     driver.maximize_window()
@@ -61,3 +63,7 @@ def signup_with_google(driver):
     )
     continue_button.click()
     print("Continue button clicked")
+
+    driver.close()  # close Google popup
+    driver.switch_to.window(original_window)
+    print("Switched back to main Daraz window.")
