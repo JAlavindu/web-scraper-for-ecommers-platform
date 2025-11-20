@@ -51,7 +51,7 @@ def signup_with_google(driver):
     password_field.send_keys(password)
 
     next_button_password = WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable((By.XPATH, "////span[contains(text(), 'Next')]"))
+        EC.element_to_be_clickable((By.XPATH, "//span[contains(text(), 'Next')]"))
     )
     next_button_password.click()
     print("Next button clicked (password)")
