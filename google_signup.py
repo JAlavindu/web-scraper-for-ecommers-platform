@@ -55,3 +55,9 @@ def signup_with_google(driver):
     )
     next_button_password.click()
     print("Next button clicked (password)")
+
+    continue_button = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.XPATH, "//span[contains(text(), 'Continue')]"))
+    )
+    continue_button.click()
+    print("Continue button clicked")
