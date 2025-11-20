@@ -27,6 +27,7 @@ def signup_with_google(driver):
 
     new_window = [w for w in driver.window_handles if w != driver.current_window_handle][0]
     driver.switch_to.window(new_window)
+    driver.maximize_window()
     print("Switched to Google login window")
 
     # --- Now wait for the email input field ---
@@ -38,7 +39,7 @@ def signup_with_google(driver):
     email_field.send_keys(email)
 
     next_button = WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable((By.XPATH, "//div[contains(@class, 'VfPpkd-RLmnJb')]"))
+        EC.element_to_be_clickable((By.XPATH, "//span[contains(text(), 'Next')]"))
     )
     next_button.click()
     print("Next button clicked (email)")
@@ -50,7 +51,7 @@ def signup_with_google(driver):
     password_field.send_keys(password)
 
     next_button_password = WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable((By.XPATH, "//div[contains(@class, 'VfPpkd-RLmnJb')]"))
+        EC.element_to_be_clickable((By.XPATH, "////span[contains(text(), 'Next')]"))
     )
     next_button_password.click()
     print("Next button clicked (password)")
