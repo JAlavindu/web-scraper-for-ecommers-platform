@@ -4,7 +4,9 @@ from selenium.webdriver.support import expected_conditions as EC
 
 def click_signup_button(driver):
 
-    signup_button = driver.find_element(By.XPATH, "//a[normalize-space()='Sign Up']")
+    signup_button = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.XPATH, "//a[normalize-space()='Sign Up']"))
+    )
 
     signup_button.click()
     WebDriverWait(driver, 10).until(
