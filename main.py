@@ -1,7 +1,5 @@
 import os
 import time
-
-import open_daraz
 from google_signup import signup_with_google
 from click_signup import click_signup_button
 from login_with_google import google_login

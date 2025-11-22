@@ -11,3 +11,5 @@ def click_signup_button(driver):
     signup_button.click()
     WebDriverWait(driver, 10).until(
         EC.visibility_of_element_located((By.XPATH, "//div[contains(@class,'iweb-dialog')]")))
+
+    print("Signup/Login modal opened")
