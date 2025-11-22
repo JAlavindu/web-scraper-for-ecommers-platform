@@ -2,6 +2,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from enter_password_email import password_email
+import time
 
 def google_login(driver):
     print("logging in with Google account...")
@@ -40,7 +41,8 @@ def google_login(driver):
     print("Next button clicked (email)")
 
     # Wait for password input field
-    password_field = WebDriverWait(driver, 10).until(
+    time.sleep(2)
+    password_field = WebDriverWait(driver, 30).until(
         EC.presence_of_element_located((By.NAME, "Passwd"))
     )
     password_field.send_keys(password)
