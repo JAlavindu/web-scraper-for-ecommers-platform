@@ -100,7 +100,9 @@ def google_login(driver, api_key=None):
     
     # Check if window is still open before checking captcha
     try:
-        if driver.current_window_handle in driver.window_handles:
+        # Safely check if the current window handle is still valid
+        current_handles = driver.window_handles
+        if driver.current_window_handle in current_handles:
             handle_captcha(driver, api_key)
         else:
             print("Window closed, assuming login successful or moved to next step.")
@@ -108,19 +110,70 @@ def google_login(driver, api_key=None):
         print(f"Could not check for CAPTCHA (window might be closed): {e}")
 
     # If window is still open, wait for continue button or closure
-    if driver.current_window_handle in driver.window_handles:
-        try:
-            continue_button = WebDriverWait(driver, 5).until(
-                EC.element_to_be_clickable((By.XPATH, "//span[contains(text(), 'Continue')]"))
-            )
-            continue_button.click()
-            print("Continue button clicked")
-        except:
-            pass # Continue button might not appear if auto-redirected
+    try:
+        if driver.current_window_handle in driver.window_handles:
+            try:
+                continue_button = WebDriverWait(driver, 5).until(
+                    EC.element_to_be_clickable((By.XPATH, "//span[contains(text(), 'Continue')]"))
+                )
+                continue_button.click()
+                print("Continue button clicked")
+            except:
+                pass # Continue button might not appear if auto-redirected
+    except:
+        pass # Window likely closed
 
     try:
         driver.switch_to.window(original_window)
         print("Switched back to main Daraz window.")
+
+        # --- Handle Google One Tap / Account Chooser iframe ---
+        print("Checking for Google Account Chooser (One Tap)...")
+        time.sleep(5) # Wait for the iframe to load
+
+        # Find all iframes
+        iframes = driver.find_elements(By.TAG_NAME, "iframe")
+        found_one_tap = False
+        
+        for i, iframe in enumerate(iframes):
+            try:
+                # Check iframe src to identify Google frames
+                src = iframe.get_attribute("src")
+                if src and ("accounts.google.com" in src or "gsi" in src):
+                    print(f"Checking iframe {i} for Google account...")
+                    driver.switch_to.frame(iframe)
+                    
+                    # Try to find the account by email
+                    try:
+                        # Look for the email address or the container
+                        account_element = WebDriverWait(driver, 3).until(
+                            EC.element_to_be_clickable((By.XPATH, f"//*[contains(text(), '{email}')]/ancestor::div[@role='button'] | //*[contains(text(), '{email}')]"))
+                        )
+                        print(f"Found account element for {email}, clicking...")
+                        driver.execute_script("arguments[0].click();", account_element)
+                        found_one_tap = True
+                        driver.switch_to.default_content()
+                        break 
+                    except:
+                        # Fallback: Try clicking the first button-like element in this Google iframe
+                        try:
+                            generic_button = driver.find_element(By.XPATH, "//div[@role='button']")
+                            print("Found generic account button, clicking...")
+                            driver.execute_script("arguments[0].click();", generic_button)
+                            found_one_tap = True
+                            driver.switch_to.default_content()
+                            break
+                        except:
+                            pass
+                    
+                    driver.switch_to.default_content()
+            except Exception as e:
+                print(f"Error checking iframe {i}: {e}")
+                driver.switch_to.default_content()
+
+        if found_one_tap:
+            print("Clicked Google One Tap account. Waiting for login...")
+            time.sleep(5)
 
         print("🔄 Waiting for login to process...")
         time.sleep(5)
