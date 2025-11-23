@@ -81,3 +81,8 @@ def handle_captcha(driver, api_key=None):
         
     except Exception as e:
         print(f"Error in CAPTCHA handler: {e}")
+        import traceback
+        traceback.print_exc()
+        # If connection is lost, re-raise to stop the script
+        if "Connection aborted" in str(e) or "invalid session" in str(e):
+            raise

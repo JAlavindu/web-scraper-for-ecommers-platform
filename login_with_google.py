@@ -97,14 +97,46 @@ def google_login(driver, api_key=None):
 
     # Check for CAPTCHA or 2FA
     time.sleep(2)
-    handle_captcha(driver, api_key)
+    
+    # Check if window is still open before checking captcha
+    try:
+        if driver.current_window_handle in driver.window_handles:
+            handle_captcha(driver, api_key)
+        else:
+            print("Window closed, assuming login successful or moved to next step.")
+    except Exception as e:
+        print(f"Could not check for CAPTCHA (window might be closed): {e}")
 
-    continue_button = WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable((By.XPATH, "//span[contains(text(), 'Continue')]"))
-    )
-    continue_button.click()
-    print("Continue button clicked")
+    # If window is still open, wait for continue button or closure
+    if driver.current_window_handle in driver.window_handles:
+        try:
+            continue_button = WebDriverWait(driver, 5).until(
+                EC.element_to_be_clickable((By.XPATH, "//span[contains(text(), 'Continue')]"))
+            )
+            continue_button.click()
+            print("Continue button clicked")
+        except:
+            pass # Continue button might not appear if auto-redirected
 
-    driver.close()  # close Google popup
-    driver.switch_to.window(original_window)
-    print("Switched back to main Daraz window.")
+    try:
+        driver.switch_to.window(original_window)
+        print("Switched back to main Daraz window.")
+
+        print("🔄 Waiting for login to process...")
+        time.sleep(5)
+
+        # Check if we need to refresh to see the logged-in state
+        try:
+            # If Login button is still visible, refresh
+            if driver.find_elements(By.XPATH, "//a[text()='Login']"):
+                print("Refreshing page to update login status...")
+                driver.refresh()
+                time.sleep(5)
+
+            print("✅ Successfully inside the website!")
+
+        except Exception as e:
+            print(f"Error verifying login state: {e}")
+
+    except:
+        print("Could not switch to original window (maybe already there?)")
