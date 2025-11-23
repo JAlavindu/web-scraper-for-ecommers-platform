@@ -13,12 +13,30 @@ def google_login(driver, api_key=None):
     WebDriverWait(driver, 10).until(
         EC.visibility_of_element_located((By.XPATH, "//div[contains(@class,'iweb-dialog')]")))
 
-    google_button = WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable((By.XPATH, "//div[contains(@class,'index_module_buttonItem')]")
-    ))
-    google_button.click()
+    # Try to find the Google button. 
+    # We'll try a few selectors to be safe, prioritizing one that mentions Google.
+    try:
+        google_button = WebDriverWait(driver, 5).until(
+            EC.element_to_be_clickable((By.XPATH, "//div[contains(@class,'index_module_buttonItem') and contains(., 'Google')]"))
+        )
+    except:
+        # Fallback to the generic class if specific text fails (it might be an icon only)
+        print("Specific Google button not found, trying generic selector...")
+        google_button = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, "//div[contains(@class,'index_module_buttonItem')]"))
+        )
 
-    WebDriverWait(driver, 10).until(EC.number_of_windows_to_be(2))
+    print("Found Google button, clicking...")
+    # Try standard click
+    try:
+        google_button.click()
+    except:
+        # Fallback to JS click
+        print("Standard click failed, using JS click...")
+        driver.execute_script("arguments[0].click();", google_button)
+
+    print("Waiting for new window...")
+    WebDriverWait(driver, 20).until(EC.number_of_windows_to_be(2))
 
     original_window = driver.current_window_handle
 
@@ -48,18 +66,25 @@ def google_login(driver, api_key=None):
     # Wait for password input field
     time.sleep(3)
     try:
+        # Use presence first to avoid NoneType error if visibility check fails weirdly
         password_field = WebDriverWait(driver, 10).until(
-            EC.visibility_of_element_located((By.XPATH, "//input[@type='password' or @name='Passwd']"))
+            EC.presence_of_element_located((By.XPATH, "//input[@type='password' or @name='Passwd']"))
         )
+        # Ensure it is visible
+        if not password_field.is_displayed():
+             WebDriverWait(driver, 5).until(lambda d: password_field.is_displayed())
     except:
         print("Password field not found immediately, retrying 'Next' click...")
         try:
             next_button.click()
         except:
             pass # Element might be stale
+        
         password_field = WebDriverWait(driver, 30).until(
-            EC.visibility_of_element_located((By.XPATH, "//input[@type='password' or @name='Passwd']"))
+            EC.presence_of_element_located((By.XPATH, "//input[@type='password' or @name='Passwd']"))
         )
+        if not password_field.is_displayed():
+             WebDriverWait(driver, 5).until(lambda d: password_field.is_displayed())
     
     password_field.click()
     password_field.send_keys(password)
