@@ -1,10 +1,12 @@
 import os
 import time
+from dotenv import load_dotenv
 from google_signup import signup_with_google
 from click_signup import click_signup_button
 from login_with_google import google_login
 import open_daraz
 
+load_dotenv()
 ANTI_API_KEY = os.getenv("ANTI_API_KEY")
 
 def choosing_login_or_signup():
@@ -14,7 +16,8 @@ def choosing_login_or_signup():
         time.sleep(5)
         signup_with_google(open_daraz.driver)
     elif choice == '2':
-        google_login(open_daraz.driver)
+        google_login(open_daraz.driver, ANTI_API_KEY)
+        time.sleep(60)
     else:
         print("Invalid choice. Please enter 1 or 2.")
 

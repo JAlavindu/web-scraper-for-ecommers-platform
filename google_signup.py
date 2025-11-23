@@ -3,7 +3,6 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from enter_password_email import password_email
 
-import open_daraz
 
 def signup_with_google(driver):
     print("Signing up with Google account...")

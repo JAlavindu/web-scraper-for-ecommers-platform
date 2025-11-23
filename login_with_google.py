@@ -3,8 +3,9 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from enter_password_email import password_email
 import time
+from captcha_utils import handle_captcha
 
-def google_login(driver):
+def google_login(driver, api_key=None):
     print("logging in with Google account...")
     login_button = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "//a[text()='Login']")))
     login_button.click()
@@ -40,11 +41,27 @@ def google_login(driver):
     next_button.click()
     print("Next button clicked (email)")
 
-    # Wait for password input field
+    # Check for CAPTCHA
     time.sleep(2)
-    password_field = WebDriverWait(driver, 30).until(
-        EC.presence_of_element_located((By.NAME, "Passwd"))
-    )
+    handle_captcha(driver, api_key)
+
+    # Wait for password input field
+    time.sleep(3)
+    try:
+        password_field = WebDriverWait(driver, 10).until(
+            EC.visibility_of_element_located((By.XPATH, "//input[@type='password' or @name='Passwd']"))
+        )
+    except:
+        print("Password field not found immediately, retrying 'Next' click...")
+        try:
+            next_button.click()
+        except:
+            pass # Element might be stale
+        password_field = WebDriverWait(driver, 30).until(
+            EC.visibility_of_element_located((By.XPATH, "//input[@type='password' or @name='Passwd']"))
+        )
+    
+    password_field.click()
     password_field.send_keys(password)
 
     next_button_password = WebDriverWait(driver, 10).until(
@@ -52,6 +69,10 @@ def google_login(driver):
     )
     next_button_password.click()
     print("Next button clicked (password)")
+
+    # Check for CAPTCHA or 2FA
+    time.sleep(2)
+    handle_captcha(driver, api_key)
 
     continue_button = WebDriverWait(driver, 10).until(
         EC.element_to_be_clickable((By.XPATH, "//span[contains(text(), 'Continue')]"))
